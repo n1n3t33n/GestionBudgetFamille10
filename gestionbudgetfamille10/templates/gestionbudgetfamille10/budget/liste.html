@@ -1,0 +1,113 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Budgets - SmartBudget10{% endblock %}
+
+{% block page_title %}Gestion des budgets{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Liste des budgets
+                </h5>
+                <div>
+                    <select class="form-select form-select-sm d-inline-block w-auto me-2" id="familleFilter">
+                        <option value="">Toutes les familles</option>
+                        {% for famille in familles %}
+                            <option value="{{ famille.idFamille }}" {% if request.GET.famille == famille.idFamille|stringformat:"s" %}selected{% endif %}>
+                                {{ famille.NomFamille }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <a href="{% url 'ajouter_budget' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i>
+                        Nouveau budget
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% if budgets %}
+        {% for budget in budgets %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            {{ budget.get_Mois_display }} {{ budget.Annee }}
+                        </h6>
+                        <span class="badge bg-info">{{ budget.idFamille.NomFamille }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Budget prévu:</span>
+                            <strong>{{ budget.MontantPrevu|floatformat:2 }} €</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Dépenses réelles:</span>
+                            <strong class="text-danger">{{ budget.depenses_reelles|floatformat:2 }} €</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Différence:</span>
+                            <strong class="{% if budget.difference >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ budget.difference|floatformat:2 }} €
+                            </strong>
+                        </div>
+                        
+                        <!-- Barre de progression -->
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar {% if budget.pourcentage > 100 %}bg-danger{% elif budget.pourcentage > 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 style="width: {{ budget.pourcentage }}%">
+                            </div>
+                        </div>
+                        <p class="text-center small">{{ budget.pourcentage|floatformat:1 }}% du budget utilisé</p>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'detail_budget' budget.idBudget %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Voir détails
+                            </a>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'modifier_budget' budget.idBudget %}" class="btn btn-outline-warning">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <a href="{% url 'supprimer_budget' budget.idBudget %}" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                <p class="lead text-muted">Aucun budget enregistré</p>
+                <a href="{% url 'ajouter_budget' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>
+                    Créer votre premier budget
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('familleFilter').addEventListener('change', function() {
+    const familleId = this.value;
+    const url = new URL(window.location.href);
+    if (familleId) {
+        url.searchParams.set('famille', familleId);
+    } else {
+        url.searchParams.delete('famille');
+    }
+    window.location.href = url.toString();
+});
+</script>
+{% endblock %}

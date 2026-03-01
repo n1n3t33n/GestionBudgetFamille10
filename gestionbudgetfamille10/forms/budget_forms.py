@@ -14,7 +14,7 @@ class BudgetForm(forms.ModelForm):
         labels = {
             'Mois': 'Mois',
             'Annee': 'Année',
-            'MontantPrevu': 'Montant prévu (€)',
+            'MontantPrevu': 'Montant prévu (CFA)',
             'idFamille': 'Famille',
         }
     

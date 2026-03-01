@@ -1,0 +1,62 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Accueil - SmartBudget10{% endblock %}
+
+{% block page_title %}Bienvenue sur SmartBudget10{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card text-center">
+            <div class="card-body p-5">
+                <i class="fas fa-wallet fa-5x text-primary mb-4"></i>
+                <h1 class="display-4 mb-4">SmartBudget10</h1>
+                <p class="lead mb-4">
+                    Gérez facilement le budget de votre famille avec notre application intuitive.
+                    Suivez vos revenus, dépenses, et restez informé de votre santé financière.
+                </p>
+                <hr class="my-4">
+                <p>Pour commencer, créez votre famille et ajoutez ses membres.</p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{% url 'ajouter_famille' %}" class="btn btn-primary btn-lg px-4 me-2">
+                        <i class="fas fa-plus-circle me-2"></i>Créer une famille
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="fas fa-tachometer-alt me-2"></i>Voir le dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                        <h5>Gestion familiale</h5>
+                        <p class="text-muted">Créez votre famille et gérez les profils de chaque membre</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-chart-pie fa-3x text-primary mb-3"></i>
+                        <h5>Analyses détaillées</h5>
+                        <p class="text-muted">Visualisez vos dépenses par catégorie avec des graphiques</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-bell fa-3x text-primary mb-3"></i>
+                        <h5>Alertes budget</h5>
+                        <p class="text-muted">Soyez averti en cas de dépassement de votre budget</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

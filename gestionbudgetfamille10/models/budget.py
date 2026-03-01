@@ -15,7 +15,7 @@ class Budget(models.Model):
     idFamille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name='budgets')
     
     def __str__(self):
-        return f"{self.get_Mois_display()} {self.Annee} - {self.MontantPrevu}€"
+        return f"{self.get_Mois_display()} {self.Annee} - {self.MontantPrevu}CFA"
     
     class Meta:
         verbose_name = "Budget"

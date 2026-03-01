@@ -1,3 +1,4 @@
+from django.db import models
 from django.shortcuts import render
 from django.db.models import Sum, Count, Avg
 from django.utils import timezone

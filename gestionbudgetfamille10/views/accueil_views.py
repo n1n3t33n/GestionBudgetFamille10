@@ -51,7 +51,7 @@ def dashboard(request):
     if budget_mois and depenses_mois > budget_mois.MontantPrevu:
         alertes.append({
             'type': 'danger',
-            'message': f"Dépassement du budget de {depenses_mois - budget_mois.MontantPrevu}€ !"
+            'message': f"Dépassement du budget de {depenses_mois - budget_mois.MontantPrevu}CFA !"
         })
     elif budget_mois and depenses_mois > budget_mois.MontantPrevu * 0.9:
         alertes.append({

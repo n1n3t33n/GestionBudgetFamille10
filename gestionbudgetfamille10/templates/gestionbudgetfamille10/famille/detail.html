@@ -1,0 +1,144 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}{{ famille.NomFamille }} - SmartBudget10{% endblock %}
+
+{% block page_title %}Détail de la famille {{ famille.NomFamille }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    Informations
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Nom :</strong> {{ famille.NomFamille }}</p>
+                <p><strong>Nombre de membres :</strong> {{ famille.NombreMembres }}</p>
+                <p><strong>Nombre de budgets :</strong> {{ budgets|length }}</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'modifier_famille' famille.idFamille %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i>Modifier
+                    </a>
+                    <a href="{% url 'supprimer_famille' famille.idFamille %}" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-users text-primary me-2"></i>
+                    Membres de la famille
+                </h5>
+                <a href="{% url 'ajouter_membre' %}?famille={{ famille.idFamille }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus-circle me-1"></i>Ajouter un membre
+                </a>
+            </div>
+            <div class="card-body">
+                {% if membres %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Rôle</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for membre in membres %}
+                                    <tr>
+                                        <td>{{ membre.Nom }}</td>
+                                        <td>{{ membre.Prenom }}</td>
+                                        <td>
+                                            <span class="badge {% if membre.Role == 'parent' %}bg-primary{% else %}bg-info{% endif %}">
+                                                {{ membre.get_Role_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'modifier_membre' membre.idMembre %}" 
+                                                   class="btn btn-outline-warning" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'supprimer_membre' membre.idMembre %}" 
+                                                   class="btn btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucun membre dans cette famille</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Budgets de la famille
+                </h5>
+                <a href="{% url 'ajouter_budget' %}?famille={{ famille.idFamille }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus-circle me-1"></i>Nouveau budget
+                </a>
+            </div>
+            <div class="card-body">
+                {% if budgets %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Période</th>
+                                    <th>Montant prévu</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for budget in budgets %}
+                                    <tr>
+                                        <td>{{ budget.get_Mois_display }} {{ budget.Annee }}</td>
+                                        <td>{{ budget.MontantPrevu|floatformat:2 }} €</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'detail_budget' budget.idBudget %}" 
+                                                   class="btn btn-outline-info" title="Voir détails">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'modifier_budget' budget.idBudget %}" 
+                                                   class="btn btn-outline-warning" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucun budget pour cette famille</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

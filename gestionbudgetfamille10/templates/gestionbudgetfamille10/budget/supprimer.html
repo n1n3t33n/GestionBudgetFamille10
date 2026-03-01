@@ -1,0 +1,40 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Supprimer un budget - SmartBudget10{% endblock %}
+
+{% block page_title %}Confirmation de suppression{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Attention !
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-4x text-danger mb-3"></i>
+                <h4>Êtes-vous sûr de vouloir supprimer ce budget ?</h4>
+                <p class="lead">{{ budget.get_Mois_display }} {{ budget.Annee }} - {{ budget.idFamille.NomFamille }}</p>
+                <p class="text-muted">
+                    Montant prévu : {{ budget.MontantPrevu|floatformat:2 }} €
+                </p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'liste_budgets' %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Confirmer la suppression
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

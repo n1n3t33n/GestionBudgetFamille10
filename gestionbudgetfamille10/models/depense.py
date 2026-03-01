@@ -12,7 +12,7 @@ class Depense(models.Model):
     idModePaiement = models.ForeignKey(ModePaiement, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.Montant}€ - {self.Date}"
+        return f"{self.Montant}CFA - {self.Date}"
     
     class Meta:
         verbose_name = "Dépense"

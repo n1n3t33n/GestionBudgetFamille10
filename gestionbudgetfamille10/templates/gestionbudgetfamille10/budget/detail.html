@@ -1,0 +1,283 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Détail du budget - SmartBudget10{% endblock %}
+
+{% block page_title %}Budget {{ budget.get_Mois_display }} {{ budget.Annee }} - {{ budget.idFamille.NomFamille }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Budget prévu</h6>
+                        <h3 class="text-white">{{ budget.MontantPrevu|floatformat:2 }} €</h3>
+                    </div>
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Dépenses réelles</h6>
+                        <h3 class="text-white">{{ total_depenses|floatformat:2 }} €</h3>
+                    </div>
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Reste</h6>
+                        <h3 class="text-white {% if reste < 0 %}text-danger{% endif %}">
+                            {{ reste|floatformat:2 }} €
+                        </h3>
+                    </div>
+                    <i class="fas fa-coins"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    Analyse du budget
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <canvas id="budgetChart" height="200"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Résumé</h6>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar {% if pourcentage > 100 %}bg-danger{% elif pourcentage > 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 style="width: {{ pourcentage }}%">
+                                {{ pourcentage|floatformat:1 }}%
+                            </div>
+                        </div>
+                        <p>Vous avez utilisé <strong>{{ pourcentage|floatformat:1 }}%</strong> de votre budget.</p>
+                        
+                        {% if reste < 0 %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Attention : Vous avez dépassé votre budget de {{ reste|floatformat:2 }} € !
+                            </div>
+                        {% elif pourcentage > 80 %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Attention : Vous avez utilisé plus de 80% de votre budget.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Vous êtes dans les objectifs de votre budget.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar text-primary me-2"></i>
+                    Dépenses par catégorie
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if depenses_par_categorie %}
+                    <canvas id="categorieChart" height="200"></canvas>
+                    <div class="mt-4">
+                        {% for item in depenses_par_categorie %}
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>{{ item.idCategorieDepense__NomCategorie }}</span>
+                                <strong>{{ item.total|floatformat:2 }} €</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucune dépense dans cette période</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-users text-primary me-2"></i>
+                    Dépenses par membre
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if depenses_par_membre %}
+                    <canvas id="membreChart" height="200"></canvas>
+                    <div class="mt-4">
+                        {% for item in depenses_par_membre %}
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>{{ item.idMembre__Prenom }} {{ item.idMembre__Nom }}</span>
+                                <strong>{{ item.total|floatformat:2 }} €</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucune dépense dans cette période</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list text-primary me-2"></i>
+                    Détail des dépenses
+                </h5>
+                <a href="{% url 'ajouter_depense' %}?famille={{ budget.idFamille.idFamille }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus-circle me-1"></i>Ajouter une dépense
+                </a>
+            </div>
+            <div class="card-body">
+                {% if depenses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Membre</th>
+                                    <th>Catégorie</th>
+                                    <th>Mode de paiement</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in depenses %}
+                                    <tr>
+                                        <td>{{ depense.Date|date:"d/m/Y" }}</td>
+                                        <td>{{ depense.idMembre.Prenom }} {{ depense.idMembre.Nom }}</td>
+                                        <td>{{ depense.idCategorieDepense.NomCategorie }}</td>
+                                        <td>{{ depense.idModePaiement.NomMode }}</td>
+                                        <td class="text-danger fw-bold">{{ depense.Montant|floatformat:2 }} €</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucune dépense enregistrée pour cette période</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique d'analyse du budget
+    const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+    new Chart(budgetCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Dépenses', 'Reste'],
+            datasets: [{
+                data: [{{ total_depenses|floatformat:2 }}, {{ reste|floatformat:2 }}],
+                backgroundColor: ['#dc3545', '#28a745'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Graphique par catégorie
+    {% if depenses_par_categorie %}
+    const categorieCtx = document.getElementById('categorieChart').getContext('2d');
+    new Chart(categorieCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for item in depenses_par_categorie %}'{{ item.idCategorieDepense__NomCategorie }}',{% endfor %}],
+            datasets: [{
+                data: [{% for item in depenses_par_categorie %}{{ item.total|floatformat:2 }},{% endfor %}],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                    '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Graphique par membre
+    {% if depenses_par_membre %}
+    const membreCtx = document.getElementById('membreChart').getContext('2d');
+    new Chart(membreCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in depenses_par_membre %}'{{ item.idMembre__Prenom }}',{% endfor %}],
+            datasets: [{
+                label: 'Montant des dépenses',
+                data: [{% for item in depenses_par_membre %}{{ item.total|floatformat:2 }},{% endfor %}],
+                backgroundColor: '#36A2EB'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Rapport annuel {{ annee }} - SmartBudget10{% endblock %}
+
+{% block page_title %}Rapport annuel {{ annee }} - {{ famille.NomFamille }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Total revenus</h6>
+                        <h3 class="text-white">{{ total_revenus|floatformat:2 }} €</h3>
+                    </div>
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Total dépenses</h6>
+                        <h3 class="text-white">{{ total_depenses|floatformat:2 }} €</h3>
+                    </div>
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Solde annuel</h6>
+                        <h3 class="text-white {% if solde_annuel < 0 %}text-danger{% endif %}">
+                            {{ solde_annuel|floatformat:2 }} €
+                        </h3>
+                    </div>
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Évolution mensuelle {{ annee }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="evolutionChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-table text-primary me-2"></i>
+                    Détail mensuel
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Revenus</th>
+                                <th>Dépenses</th>
+                                <th>Solde</th>
+                                <th>Budget</th>
+                                <th>Écart</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in donnees_mensuelles %}
+                                <tr>
+                                    <td>
+                                        {% with mois=data.mois %}
+                                            {% if mois == 1 %}Janvier
+                                            {% elif mois == 2 %}Février
+                                            {% elif mois == 3 %}Mars
+                                            {% elif mois == 4 %}Avril
+                                            {% elif mois == 5 %}Mai
+                                            {% elif mois == 6 %}Juin
+                                            {% elif mois == 7 %}Juillet
+                                            {% elif mois == 8 %}Août
+                                            {% elif mois == 9 %}Septembre
+                                            {% elif mois == 10 %}Octobre
+                                            {% elif mois == 11 %}Novembre
+                                            {% elif mois == 12 %}Décembre
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td class="text-success">{{ data.revenus|floatformat:2 }} €</td>
+                                    <td class="text-danger">{{ data.depenses|floatformat:2 }} €</td>
+                                    <td class="{% if data.solde >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ data.solde|floatformat:2 }} €
+                                    </td>
+                                    <td>
+                                        {% if data.budget %}
+                                            {{ data.budget|floatformat:2 }} €
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if data.budget %}
+                                            {% with ecart=data.budget|add:data.depenses %}
+                                                <span class="{% if ecart >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    {{ ecart|floatformat:2 }} €
+                                                </span>
+                                            {% endwith %}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    Analyse annuelle
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="pieChart" height="200"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Résumé de l'année {{ annee }}</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Mois avec le plus de revenus
+                                <span class="badge bg-primary rounded-pill">
+                                    {% with max_revenus=donnees_mensuelles|dictsortreversed:"revenus"|first %}
+                                        {% if max_revenus.mois == 1 %}Janvier
+                                        {% elif max_revenus.mois == 2 %}Février
+                                        {% elif max_revenus.mois == 3 %}Mars
+                                        {% elif max_revenus.mois == 4 %}Avril
+                                        {% elif max_revenus.mois == 5 %}Mai
+                                        {% elif max_revenus.mois == 6 %}Juin
+                                        {% elif max_revenus.mois == 7 %}Juillet
+                                        {% elif max_revenus.mois == 8 %}Août
+                                        {% elif max_revenus.mois == 9 %}Septembre
+                                        {% elif max_revenus.mois == 10 %}Octobre
+                                        {% elif max_revenus.mois == 11 %}Novembre
+                                        {% elif max_revenus.mois == 12 %}Décembre
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Mois avec le plus de dépenses
+                                <span class="badge bg-danger rounded-pill">
+                                    {% with max_depenses=donnees_mensuelles|dictsortreversed:"depenses"|first %}
+                                        {% if max_depenses.mois == 1 %}Janvier
+                                        {% elif max_depenses.mois == 2 %}Février
+                                        {% elif max_depenses.mois == 3 %}Mars
+                                        {% elif max_depenses.mois == 4 %}Avril
+                                        {% elif max_depenses.mois == 5 %}Mai
+                                        {% elif max_depenses.mois == 6 %}Juin
+                                        {% elif max_depenses.mois == 7 %}Juillet
+                                        {% elif max_depenses.mois == 8 %}Août
+                                        {% elif max_depenses.mois == 9 %}Septembre
+                                        {% elif max_depenses.mois == 10 %}Octobre
+                                        {% elif max_depenses.mois == 11 %}Novembre
+                                        {% elif max_depenses.mois == 12 %}Décembre
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Nombre de mois avec budget respecté
+                                <span class="badge bg-success rounded-pill">
+                                    {{ donnees_mensuelles|dictsort:"budget"|length }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique d'évolution
+    const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+    new Chart(evolutionCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for data in donnees_mensuelles %}
+                '{% if data.mois == 1 %}Jan{% elif data.mois == 2 %}Fév{% elif data.mois == 3 %}Mar{% elif data.mois == 4 %}Avr{% elif data.mois == 5 %}Mai{% elif data.mois == 6 %}Juin{% elif data.mois == 7 %}Juil{% elif data.mois == 8 %}Aoû{% elif data.mois == 9 %}Sep{% elif data.mois == 10 %}Oct{% elif data.mois == 11 %}Nov{% elif data.mois == 12 %}Déc{% endif %}',
+            {% endfor %}],
+            datasets: [{
+                label: 'Revenus',
+                data: [{% for data in donnees_mensuelles %}{{ data.revenus }},{% endfor %}],
+                borderColor: '#28a745',
+                tension: 0.1
+            }, {
+                label: 'Dépenses',
+                data: [{% for data in donnees_mensuelles %}{{ data.depenses }},{% endfor %}],
+                borderColor: '#dc3545',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Graphique circulaire
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Revenus', 'Dépenses'],
+            datasets: [{
+                data: [{{ total_revenus|floatformat:2 }}, {{ total_depenses|floatformat:2 }}],
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Dashboard - SmartBudget10{% endblock %}
+
+{% block page_title %}
+    {% if famille %}
+        Dashboard - {{ famille.NomFamille }}
+    {% else %}
+        Dashboard
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+{% if famille %}
+    <!-- Alertes -->
+    {% if alertes %}
+        {% for alerte in alertes %}
+            <div class="alert alert-{{ alerte.type }} alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ alerte.message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Revenus du mois</h6>
+                            <h3 class="text-white">{{ revenus_mois|floatformat:2 }} CFA</h3>
+                        </div>
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Dépenses du mois</h6>
+                            <h3 class="text-white">{{ depenses_mois|floatformat:2 }} CFA</h3>
+                        </div>
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Solde du mois</h6>
+                            <h3 class="text-white {% if solde_mois < 0 %}text-danger{% endif %}">
+                                {{ solde_mois|floatformat:2 }} CFA
+                            </h3>
+                        </div>
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50">Budget du mois</h6>
+                            <h3 class="text-white">
+                                {% if budget_mois %}
+                                    {{ budget_mois.MontantPrevu|floatformat:2 }} CFA
+                                {% else %}
+                                    Non défini
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique d'évolution -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Évolution mensuelle
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="evolutionChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique d'évolution
+    const ctx = document.getElementById('evolutionChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+            datasets: [{
+                label: 'Revenus',
+                data: [1200, 1300, 1250, 1400, 1350, 1500, 1450, 1550, 1600, 1580, 1620, 1700],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }, {
+                label: 'Dépenses',
+                data: [800, 950, 900, 1100, 1050, 1200, 1150, 1250, 1300, 1280, 1320, 1400],
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' CFA';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+    <div class="row">
+        <!-- Dernières dépenses -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-cart text-primary me-2"></i>
+                        Dernières dépenses
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if dernieres_depenses %}
+                        <div class="list-group list-group-flush">
+                            {% for depense in dernieres_depenses %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-info me-2">{{ depense.Date|date:"d/m" }}</span>
+                                        <strong>{{ depense.idMembre.Prenom }}</strong>
+                                        <span class="text-muted">- {{ depense.idCategorieDepense.NomCategorie }}</span>
+                                    </div>
+                                    <span class="text-danger fw-bold">{{ depense.Montant|floatformat:2 }} CFA</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">Aucune dépense enregistrée</p>
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{% url 'ajouter_depense' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Ajouter une dépense
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Derniers revenus -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-euro-sign text-primary me-2"></i>
+                        Derniers revenus
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if derniers_revenus %}
+                        <div class="list-group list-group-flush">
+                            {% for revenu in derniers_revenus %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-info me-2">{{ revenu.Date|date:"d/m" }}</span>
+                                        <strong>{{ revenu.idMembre.Prenom }}</strong>
+                                        <span class="text-muted">- {{ revenu.idTypeRevenu.NomType }}</span>
+                                    </div>
+                                    <span class="text-success fw-bold">{{ revenu.Montant|floatformat:2 }} CFA</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">Aucun revenu enregistré</p>
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{% url 'ajouter_revenu' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Ajouter un revenu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt text-primary me-2"></i>
+                        Actions rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'ajouter_depense' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus-circle me-1"></i>Nouvelle dépense
+                        </a>
+                        <a href="{% url 'ajouter_revenu' %}" class="btn btn-outline-success">
+                            <i class="fas fa-plus-circle me-1"></i>Nouveau revenu
+                        </a>
+                        <a href="{% url 'ajouter_budget' %}" class="btn btn-outline-info">
+                            <i class="fas fa-plus-circle me-1"></i>Nouveau budget
+                        </a>
+                        <a href="{% url 'generer_rapport' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-file-pdf me-1"></i>Générer rapport
+                        </a>
+                        <a href="{% url 'statistiques' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-chart-bar me-1"></i>Voir statistiques
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Aucune famille trouvée. Veuillez d'abord <a href="{% url 'ajouter_famille' %}" class="alert-link">créer une famille</a>.
+    </div>
+{% endif %}
+{% endblock %}

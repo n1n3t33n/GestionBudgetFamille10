@@ -12,7 +12,7 @@ class RevenuForm(forms.ModelForm):
             'idTypeRevenu': forms.Select(attrs={'class': 'form-control'}),
         }
         labels = {
-            'Montant': 'Montant (€)',
+            'Montant': 'Montant (CFA)',
             'Date': 'Date',
             'idMembre': 'Membre',
             'idTypeRevenu': 'Type de revenu',

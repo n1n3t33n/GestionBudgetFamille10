@@ -1,0 +1,339 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Statistiques - SmartBudget10{% endblock %}
+
+{% block page_title %}Statistiques financières{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Revenus {{ mois_courant }}</h6>
+                        <h3 class="text-white">{{ total_revenus_mois|floatformat:2 }} €</h3>
+                    </div>
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Dépenses {{ mois_courant }}</h6>
+                        <h3 class="text-white">{{ total_depenses_mois|floatformat:2 }} €</h3>
+                    </div>
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Solde {{ mois_courant }}</h6>
+                        <h3 class="text-white {% if solde_mois < 0 %}text-danger{% endif %}">
+                            {{ solde_mois|floatformat:2 }} €
+                        </h3>
+                    </div>
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Année {{ annee_courante }}</h6>
+                        <h3 class="text-white">{{ total_revenus_annee|floatformat:2 }} €</h3>
+                    </div>
+                    <i class="fas fa-calendar"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Évolution mensuelle (12 mois)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="evolutionChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    Répartition des dépenses par catégorie
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categorieChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    Répartition des revenus par type
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenuChart" height="200"></canvas>
+                <div class="mt-4">
+                    {% for item in revenus_par_type %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ item.NomType }}</span>
+                            <strong>{{ item.total|floatformat:2 }} €</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-credit-card text-primary me-2"></i>
+                    Répartition par mode de paiement
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="modeChart" height="200"></canvas>
+                <div class="mt-4">
+                    {% for item in depenses_par_mode %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ item.NomMode }}</span>
+                            <strong>{{ item.total|floatformat:2 }} €</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-users text-primary me-2"></i>
+                    Statistiques par membre
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Membre</th>
+                                <th>Revenus (année)</th>
+                                <th>Dépenses (année)</th>
+                                <th>Solde</th>
+                                <th>% des dépenses</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in stats_par_membre %}
+                                <tr>
+                                    <td>{{ stat.membre.Prenom }} {{ stat.membre.Nom }}</td>
+                                    <td class="text-success">{{ stat.revenus|floatformat:2 }} €</td>
+                                    <td class="text-danger">{{ stat.depenses|floatformat:2 }} €</td>
+                                    <td class="{% if stat.solde >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ stat.solde|floatformat:2 }} €
+                                    </td>
+                                    <td>
+                                        {% if total_depenses_annee > 0 %}
+                                            {{ stat.depenses|floatformat:2|divisibleby:total_depenses_annee|floatformat:1 }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-fire text-primary me-2"></i>
+                    Top 10 des plus grosses dépenses
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if top_depenses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Membre</th>
+                                    <th>Catégorie</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in top_depenses %}
+                                    <tr>
+                                        <td>{{ depense.Date|date:"d/m/Y" }}</td>
+                                        <td>{{ depense.idMembre.Prenom }} {{ depense.idMembre.Nom }}</td>
+                                        <td>{{ depense.idCategorieDepense.NomCategorie }}</td>
+                                        <td class="text-danger fw-bold">{{ depense.Montant|floatformat:2 }} €</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucune dépense enregistrée</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique d'évolution
+    const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+    new Chart(evolutionCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for item in evolution_mensuelle %}'{{ item.mois }}',{% endfor %}],
+            datasets: [{
+                label: 'Revenus',
+                data: [{% for item in evolution_mensuelle %}{{ item.revenus }},{% endfor %}],
+                borderColor: '#28a745',
+                tension: 0.1
+            }, {
+                label: 'Dépenses',
+                data: [{% for item in evolution_mensuelle %}{{ item.depenses }},{% endfor %}],
+                borderColor: '#dc3545',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Graphique par catégorie
+    {% if depenses_par_categorie %}
+    const categorieCtx = document.getElementById('categorieChart').getContext('2d');
+    new Chart(categorieCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for item in depenses_par_categorie %}'{{ item.NomCategorie }}',{% endfor %}],
+            datasets: [{
+                data: [{% for item in depenses_par_categorie %}{{ item.total }},{% endfor %}],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                    '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Graphique des revenus par type
+    {% if revenus_par_type %}
+    const revenuCtx = document.getElementById('revenuChart').getContext('2d');
+    new Chart(revenuCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for item in revenus_par_type %}'{{ item.NomType }}',{% endfor %}],
+            datasets: [{
+                data: [{% for item in revenus_par_type %}{{ item.total }},{% endfor %}],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Graphique par mode de paiement
+    {% if depenses_par_mode %}
+    const modeCtx = document.getElementById('modeChart').getContext('2d');
+    new Chart(modeCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for item in depenses_par_mode %}'{{ item.NomMode }}',{% endfor %}],
+            datasets: [{
+                data: [{% for item in depenses_par_mode %}{{ item.total }},{% endfor %}],
+                backgroundColor: ['#6610f2', '#6f42c1', '#e83e8c', '#dc3545', '#fd7e14']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}
+{% endblock %}

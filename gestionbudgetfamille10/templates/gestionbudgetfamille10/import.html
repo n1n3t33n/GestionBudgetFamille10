@@ -1,0 +1,113 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Import/Export - SmartBudget10{% endblock %}
+
+{% block page_title %}Import et export de données{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-download text-primary me-2"></i>
+                    Export des données
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Téléchargez vos données au format Excel pour les analyser dans votre tableur préféré.</p>
+                
+                <div class="list-group">
+                    <a href="{% url 'export_excel' 'revenus' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-euro-sign text-success me-2"></i>
+                            Exporter les revenus
+                        </div>
+                        <span class="badge bg-primary rounded-pill">
+                            <i class="fas fa-download"></i>
+                        </span>
+                    </a>
+                    
+                    <a href="{% url 'export_excel' 'depenses' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-shopping-cart text-danger me-2"></i>
+                            Exporter les dépenses
+                        </div>
+                        <span class="badge bg-primary rounded-pill">
+                            <i class="fas fa-download"></i>
+                        </span>
+                    </a>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Les fichiers sont exportés au format Excel (.xlsx)
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload text-primary me-2"></i>
+                    Import des données
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Importez vos données depuis un fichier Excel ou CSV.</p>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Type de données</label>
+                        <select name="type" class="form-control" required>
+                            <option value="">Sélectionnez...</option>
+                            <option value="revenus">Revenus</option>
+                            <option value="depenses">Dépenses</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Fichier</label>
+                        <input type="file" name="fichier" class="form-control" accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">Formats acceptés : Excel (.xlsx, .xls) et CSV</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload me-1"></i>
+                        Importer
+                    </button>
+                </form>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Format attendu :</strong><br>
+                    <strong>Revenus :</strong> Date, Membre, Type, Montant<br>
+                    <strong>Dépenses :</strong> Date, Membre, Catégorie, Mode paiement, Montant
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history text-primary me-2"></i>
+                    Historique des imports
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-center py-3">
+                    Fonctionnalité à venir : historique des imports réalisés
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

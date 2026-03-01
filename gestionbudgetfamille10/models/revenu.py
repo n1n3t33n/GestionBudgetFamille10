@@ -10,7 +10,7 @@ class Revenu(models.Model):
     idTypeRevenu = models.ForeignKey(TypeRevenu, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f"{self.Montant}€ - {self.Date}"
+        return f"{self.Montant}CFA - {self.Date}"
     
     class Meta:
         verbose_name = "Revenu"

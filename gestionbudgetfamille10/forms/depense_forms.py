@@ -13,7 +13,7 @@ class DepenseForm(forms.ModelForm):
             'idModePaiement': forms.Select(attrs={'class': 'form-control'}),
         }
         labels = {
-            'Montant': 'Montant (€)',
+            'Montant': 'Montant (CFA)',
             'Date': 'Date',
             'idMembre': 'Membre',
             'idCategorieDepense': 'Catégorie',

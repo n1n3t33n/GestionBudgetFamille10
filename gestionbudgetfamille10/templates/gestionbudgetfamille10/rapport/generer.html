@@ -1,0 +1,278 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Rapport financier - SmartBudget10{% endblock %}
+
+{% block page_title %}Rapport financier{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>
+                    Période du rapport
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Date début</label>
+                        {{ form.date_debut }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date fin</label>
+                        {{ form.date_fin }}
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-file-pdf me-1"></i>Générer le rapport
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if date_debut %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar text-primary me-2"></i>
+                    Résumé de la période
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <span class="text-muted">Période</span>
+                            <h5>{{ date_debut|date:"d/m/Y" }} - {{ date_fin|date:"d/m/Y" }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <span class="text-muted">Total revenus</span>
+                            <h5 class="text-success">{{ total_revenus|floatformat:2 }} €</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <span class="text-muted">Total dépenses</span>
+                            <h5 class="text-danger">{{ total_depenses|floatformat:2 }} €</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <span class="text-muted">Solde</span>
+                            <h5 class="{% if solde_periode >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ solde_periode|floatformat:2 }} €
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                    Analyse mensuelle
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="evolutionChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    Top 5 des catégories de dépenses
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categorieChart" height="200"></canvas>
+                <div class="mt-4">
+                    {% for item in top_categories %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ item.idCategorieDepense__NomCategorie }}</span>
+                            <strong>{{ item.total|floatformat:2 }} € ({{ item.nombre }} op.)</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-table text-primary me-2"></i>
+                    Détail mensuel
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mois</th>
+                                <th>Revenus</th>
+                                <th>Dépenses</th>
+                                <th>Solde</th>
+                                <th>Budget</th>
+                                <th>Respect budget</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mois in mois_analyse %}
+                                <tr>
+                                    <td>{{ mois.nom_mois }}</td>
+                                    <td class="text-success">{{ mois.revenus|floatformat:2 }} €</td>
+                                    <td class="text-danger">{{ mois.depenses|floatformat:2 }} €</td>
+                                    <td class="{% if mois.solde >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ mois.solde|floatformat:2 }} €
+                                    </td>
+                                    <td>
+                                        {% if mois.budget %}
+                                            {{ mois.budget|floatformat:2 }} €
+                                        {% else %}
+                                            <span class="text-muted">Non défini</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if mois.respect_budget is not None %}
+                                            {% if mois.respect_budget %}
+                                                <span class="badge bg-success">Respecté</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Dépassé</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Indicateurs clés
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <span class="text-muted">Moyenne journalière des dépenses</span>
+                            <h4>{{ moyenne_journaliere|floatformat:2 }} €</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <span class="text-muted">Nombre total d'opérations</span>
+                            <h4>{{ nombre_operations }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <span class="text-muted">Famille</span>
+                            <h4>{{ famille.NomFamille }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique d'évolution
+    const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+    new Chart(evolutionCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for mois in mois_analyse %}'{{ mois.nom_mois }}',{% endfor %}],
+            datasets: [{
+                label: 'Revenus',
+                data: [{% for mois in mois_analyse %}{{ mois.revenus|floatformat:2 }},{% endfor %}],
+                borderColor: '#28a745',
+                tension: 0.1
+            }, {
+                label: 'Dépenses',
+                data: [{% for mois in mois_analyse %}{{ mois.depenses|floatformat:2 }},{% endfor %}],
+                borderColor: '#dc3545',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Graphique des catégories
+    {% if top_categories %}
+    const categorieCtx = document.getElementById('categorieChart').getContext('2d');
+    new Chart(categorieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for item in top_categories %}'{{ item.idCategorieDepense__NomCategorie }}',{% endfor %}],
+            datasets: [{
+                data: [{% for item in top_categories %}{{ item.total|floatformat:2 }},{% endfor %}],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}
+{% endif %}
+{% endblock %}

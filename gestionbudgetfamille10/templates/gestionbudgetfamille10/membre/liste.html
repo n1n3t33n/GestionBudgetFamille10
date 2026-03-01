@@ -1,0 +1,104 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Membres - SmartBudget10{% endblock %}
+
+{% block page_title %}Gestion des membres{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-user text-primary me-2"></i>
+                    Liste des membres
+                </h5>
+                <div>
+                    <!-- Filtre par famille -->
+                    <select class="form-select form-select-sm d-inline-block w-auto me-2" id="familleFilter">
+                        <option value="">Toutes les familles</option>
+                        {% for famille in familles %}
+                            <option value="{{ famille.idFamille }}" {% if request.GET.famille == famille.idFamille|stringformat:"s" %}selected{% endif %}>
+                                {{ famille.NomFamille }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <a href="{% url 'ajouter_membre' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i>
+                        Nouveau membre
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if membres %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Rôle</th>
+                                    <th>Famille</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for membre in membres %}
+                                    <tr>
+                                        <td>{{ membre.Nom }}</td>
+                                        <td>{{ membre.Prenom }}</td>
+                                        <td>
+                                            <span class="badge {% if membre.Role == 'parent' %}bg-primary{% else %}bg-info{% endif %}">
+                                                {{ membre.get_Role_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'detail_famille' membre.idFamille.idFamille %}">
+                                                {{ membre.idFamille.NomFamille }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'modifier_membre' membre.idMembre %}" 
+                                                   class="btn btn-outline-warning" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'supprimer_membre' membre.idMembre %}" 
+                                                   class="btn btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-user fa-4x text-muted mb-3"></i>
+                        <p class="lead text-muted">Aucun membre enregistré</p>
+                        <a href="{% url 'ajouter_membre' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i>
+                            Ajouter votre premier membre
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('familleFilter').addEventListener('change', function() {
+    const familleId = this.value;
+    const url = new URL(window.location.href);
+    if (familleId) {
+        url.searchParams.set('famille', familleId);
+    } else {
+        url.searchParams.delete('famille');
+    }
+    window.location.href = url.toString();
+});
+</script>
+{% endblock %}

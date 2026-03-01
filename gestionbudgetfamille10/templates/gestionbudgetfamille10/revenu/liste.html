@@ -1,0 +1,158 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Revenus - SmartBudget10{% endblock %}
+
+{% block page_title %}Gestion des revenus{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>
+                    Filtres
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Date début</label>
+                        {{ form.date_debut }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date fin</label>
+                        {{ form.date_fin }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Mois</label>
+                        {{ form.mois }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Année</label>
+                        {{ form.annee }}
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i>Filtrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50">Total des revenus</h6>
+                        <h3 class="text-white">{{ total|floatformat:2 }} CFA</h3>
+                    </div>
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9 mb-4">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    Répartition par type
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for item in par_type %}
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>{{ item.idTypeRevenu__NomType }}</span>
+                                <strong>{{ item.total|floatformat:2 }} CFA</strong>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width: {{ item.total|floatformat:0 }}%">
+                                    {{ item.total|floatformat:0 }}%
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list text-primary me-2"></i>
+                    Liste des revenus
+                </h5>
+                <a href="{% url 'ajouter_revenu' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>
+                    Nouveau revenu
+                </a>
+            </div>
+            <div class="card-body">
+                {% if revenus %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Membre</th>
+                                    <th>Type</th>
+                                    <th>Montant</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for revenu in revenus %}
+                                    <tr>
+                                        <td>{{ revenu.Date|date:"d/m/Y" }}</td>
+                                        <td>{{ revenu.idMembre.Prenom }} {{ revenu.idMembre.Nom }}</td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                {{ revenu.idTypeRevenu.NomType }}
+                                            </span>
+                                        </td>
+                                        <td class="text-success fw-bold">{{ revenu.Montant|floatformat:2 }} CFA</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'modifier_revenu' revenu.idRevenu %}" 
+                                                   class="btn btn-outline-warning" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'supprimer_revenu' revenu.idRevenu %}" 
+                                                   class="btn btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-euro-sign fa-4x text-muted mb-3"></i>
+                        <p class="lead text-muted">Aucun revenu enregistré</p>
+                        <a href="{% url 'ajouter_revenu' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i>
+                            Ajouter votre premier revenu
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

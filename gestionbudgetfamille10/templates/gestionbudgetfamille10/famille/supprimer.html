@@ -1,0 +1,48 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Supprimer une famille - SmartBudget10{% endblock %}
+
+{% block page_title %}Confirmation de suppression{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Attention - Action irréversible !
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-4x text-danger mb-3"></i>
+                <h4>Êtes-vous sûr de vouloir supprimer cette famille ?</h4>
+                <p class="lead">{{ famille.NomFamille }}</p>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Cette action supprimera également :
+                    <ul class="text-start mt-2 mb-0">
+                        <li>Tous les membres de cette famille</li>
+                        <li>Tous les revenus associés</li>
+                        <li>Toutes les dépenses associées</li>
+                        <li>Tous les budgets de la famille</li>
+                    </ul>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'detail_famille' famille.idFamille %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Confirmer la suppression
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

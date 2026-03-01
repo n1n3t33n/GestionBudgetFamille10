@@ -1,0 +1,105 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Alertes - SmartBudget10{% endblock %}
+
+{% block page_title %}Alertes et dépassements de budget{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% if alertes %}
+            {% for alerte in alertes %}
+                <div class="card mb-3 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Dépassement de budget - {{ alerte.budget.get_Mois_display }} {{ alerte.budget.Annee }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <span class="text-muted">Budget prévu</span>
+                                    <h4>{{ alerte.budget.MontantPrevu|floatformat:2 }} €</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <span class="text-muted">Dépenses réelles</span>
+                                    <h4 class="text-danger">{{ alerte.depenses|floatformat:2 }} €</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <span class="text-muted">Dépassement</span>
+                                    <h4 class="text-danger">+{{ alerte.depassement|floatformat:2 }} €</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <span class="text-muted">Pourcentage</span>
+                                    <h4 class="text-danger">{{ alerte.pourcentage|floatformat:1 }}%</h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-danger" style="width: {{ alerte.pourcentage }}%">
+                                {{ alerte.pourcentage|floatformat:1 }}%
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'detail_budget' alerte.budget.idBudget %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>Voir les détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                    <h4 class="text-success">Aucune alerte</h4>
+                    <p class="lead text-muted">Tous vos budgets sont respectés. Bonne gestion !</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    Conseils de gestion
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Revoyez régulièrement vos budgets pour les adapter à vos besoins réels.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Essayez de maintenir vos dépenses en dessous de 80% de votre budget.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Utilisez les statistiques pour identifier les catégories où vous dépensez le plus.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Impliquez tous les membres de la famille dans la gestion budgétaire.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'gestionbudgetfamille10/base.html' %}
+
+{% block title %}Statistiques par catégorie - SmartBudget10{% endblock %}
+
+{% block page_title %}Analyse détaillée par catégorie{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% for data in donnees_categories %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tag text-primary me-2"></i>
+                        {{ data.categorie.NomCategorie }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded">
+                                <span class="text-muted">Total annuel</span>
+                                <h4 class="text-danger">{{ data.total|floatformat:2 }} €</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 border rounded">
+                                <span class="text-muted">Nombre d'achats</span>
+                                <h4>{{ data.nombre }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="text-muted">Moyenne par achat</span>
+                        <h5>{{ data.moyenne|floatformat:2 }} €</h5>
+                    </div>
+                    
+                    <canvas id="chart{{ forloop.counter }}" height="100"></canvas>
+                    
+                    <div class="mt-3">
+                        <h6>Évolution mensuelle</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Jan</th>
+                                        <th>Fév</th>
+                                        <th>Mar</th>
+                                        <th>Avr</th>
+                                        <th>Mai</th>
+                                        <th>Juin</th>
+                                        <th>Juil</th>
+                                        <th>Août</th>
+                                        <th>Sep</th>
+                                        <th>Oct</th>
+                                        <th>Nov</th>
+                                        <th>Déc</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        {% for montant in data.evolution %}
+                                            <td>{{ montant|floatformat:0 }} €</td>
+                                        {% endfor %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx{{ forloop.counter }} = document.getElementById('chart{{ forloop.counter }}').getContext('2d');
+            new Chart(ctx{{ forloop.counter }}, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                    datasets: [{
+                        label: '{{ data.categorie.NomCategorie }}',
+                        data: [{% for montant in data.evolution %}{{ montant }},{% endfor %}],
+                        borderColor: '#36A2EB',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' €';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        </script>
+    {% endfor %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-primary me-2"></i>
+                    Analyse et recommandations
+                </h5>
+            </div>
+            <div class="card-body">
+                {% with categorie_max=donnees_categories|dictsortreversed:"total"|first %}
+                    {% if categorie_max %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <strong>Catégorie principale :</strong> 
+                            Vous dépensez le plus dans "{{ categorie_max.categorie.NomCategorie }}" 
+                            avec un total de {{ categorie_max.total|floatformat:2 }} € sur l'année.
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% with categorie_freq=donnees_categories|dictsortreversed:"nombre"|first %}
+                    {% if categorie_freq %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            <strong>Achats fréquents :</strong> 
+                            "{{ categorie_freq.categorie.NomCategorie }}" est la catégorie où vous faites le plus d'achats 
+                            ({{ categorie_freq.nombre }} fois dans l'année).
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="alert alert-success">
+                    <i class="fas fa-piggy-bank me-2"></i>
+                    <strong>Conseil d'économie :</strong> 
+                    Identifiez les catégories où vous pourriez réduire vos dépenses et fixez-vous des objectifs mensuels.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
